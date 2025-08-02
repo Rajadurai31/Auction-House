@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Auction House</title>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            background: url('auction-bg.jpg') center center/cover no-repeat fixed;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 0;
+        }
+        .login-container {
+            background: #fff;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .login-container h2 {
+            margin-bottom: 1.5rem;
+            color: #ff6600;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 90%;
+            padding: 0.7rem;
+            margin: 0.5rem 0 1rem 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .login-container button {
+            background: #ff6600;
+            color: #fff;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        .login-container .link {
+            display: block;
+            margin-top: 1.5rem;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .login-container .link:hover {
+            text-decoration: underline;
+        }
+        .bg-title {
+            position: fixed;
+            top: 8vh;
+            left: 0;
+            width: 100vw;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.2em;
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 2px 2px 8px #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-title">Auction House</div>
+    <div class="login-container">
+        <h2>Login to Auction House</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required><br>
+            <input type="password" id="password" placeholder="Password" required><br>
+            <button type="submit">Login</button>
+        </form>
+        <div id="loginError" style="color:#e53935; margin-top:0.5rem;"></div>
+        <button id="showSignup" style="margin-top:1.5rem; background:#007bff; color:#fff; border:none; padding:0.7rem 2rem; border-radius:6px; font-size:1rem; cursor:pointer;">Sign Up</button>
+    </div>
+    <!-- Signup Modal -->
+    <div id="signupModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);">
+      <div style="background:#fff; padding:2rem 1.5rem; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.12); width:90%; max-width:350px; margin:7% auto; text-align:center; position:relative;">
+        <span id="closeSignup" style="position:absolute; top:10px; right:18px; font-size:2rem; color:#ff6600; cursor:pointer;">&times;</span>
+        <h2 style="color:#ff6600; margin-bottom:1.5rem;">Sign Up</h2>
+        <form id="signupForm">
+          <input type="text" id="signupUsername" placeholder="Username" required style="width:90%; padding:0.7rem; margin:0.5rem 0 1rem 0; border:1px solid #ccc; border-radius:6px; font-size:1rem;"><br>
+          <input type="password" id="signupPassword" placeholder="Password" required style="width:90%; padding:0.7rem; margin:0.5rem 0 1rem 0; border:1px solid #ccc; border-radius:6px; font-size:1rem;"><br>
+          <input type="password" id="signupConfirm" placeholder="Confirm Password" required style="width:90%; padding:0.7rem; margin:0.5rem 0 1rem 0; border:1px solid #ccc; border-radius:6px; font-size:1rem;"><br>
+          <button type="submit" style="background:#ff6600; color:#fff; border:none; padding:0.7rem 2rem; border-radius:6px; font-size:1rem; cursor:pointer;">Create Account</button>
+        </form>
+        <div id="signupError" style="color:#e53935; margin-top:0.5rem;"></div>
+      </div>
+    </div>
+    <script>
+    document.getElementById('loginForm').onsubmit = function(e) {
+        e.preventDefault();
+        var user = document.getElementById('username').value;
+        var pass = document.getElementById('password').value;
+        var errorDiv = document.getElementById('loginError');
+        if(user === 'user' && pass === 'pass') {
+            window.location.href = 'source.html';
+        } else {
+            errorDiv.textContent = 'Invalid username or password.';
+        }
+    };
+    document.getElementById('showSignup').onclick = function() {
+        document.getElementById('signupModal').style.display = 'block';
+    };
+    document.getElementById('closeSignup').onclick = function() {
+        document.getElementById('signupModal').style.display = 'none';
+    };
+    document.getElementById('signupForm').onsubmit = function(e) {
+        e.preventDefault();
+        var user = document.getElementById('signupUsername').value;
+        var pass = document.getElementById('signupPassword').value;
+        var conf = document.getElementById('signupConfirm').value;
+        var errorDiv = document.getElementById('signupError');
+        if(pass !== conf) {
+            errorDiv.textContent = 'Passwords do not match.';
+            return;
+        }
+        errorDiv.textContent = 'Account created! (Demo only)';
+        setTimeout(function(){
+            document.getElementById('signupModal').style.display = 'none';
+        }, 1200);
+    };
+    </script>
+</body>
+</html>

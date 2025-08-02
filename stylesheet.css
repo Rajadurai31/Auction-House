@@ -1,0 +1,204 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    /* max-width: 1200px; */
+    display: flex;
+    background-color: hsl(280, 54%, 11%);
+    position:sticky;
+    top: 0;
+}
+
+header {
+    background: hsl(280, 54%, 11%);
+    color: #eff2f4;
+    padding: 1rem 0;
+}
+header img{
+      width: 150px;
+      /* display:inline-flex; */
+      margin: 20px;
+      margin-right:  20%;
+}
+nav ul {
+    list-style: none;
+    /* padding: 0; */
+    display: inline-flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-left: 180%;
+}
+nav li{
+    margin-right: 25%;
+
+}
+nav li :hover{
+     color: #dc0bdc;
+
+}
+nav a {
+    color: #f8f6f5;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.hero {
+     background: url('golden.png') no-repeat center center/cover; 
+
+    color: #020205;
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.hero h2 {
+    margin: 0 0 1rem;
+    font-size: 2.5rem;
+}
+
+
+/* Auctions Section */
+.auction-list {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin: 2rem 0;
+}
+
+.auction-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    text-align: center;
+    flex: 1 1 calc(33.333% - 2rem);
+    box-sizing: border-box;
+}
+
+.auction-item img {
+    max-width: 100%;
+    height: 70%;
+}
+
+.auction-item h3 {
+    margin: 0.5rem 0;
+}
+
+.auction-item .btn {
+    background: #007bff;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+footer {
+    background: #444;
+    color: #fff;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+}
+
+/* Modal Styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.7);
+}
+.modal-content {
+  background: #fff8e1;
+  margin: 5% auto;
+  padding: 2rem;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 350px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  text-align: center;
+  position: relative;
+}
+.modal-content h2 {
+  background: #ff6600;
+  color: #fff;
+  margin: -2rem -2rem 1rem -2rem;
+  padding: 1rem 0;
+  border-radius: 18px 18px 0 0;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+#modalProduct {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+#modalImg {
+  border: 2px solid #ff6600;
+  border-radius: 8px;
+  background: #fff;
+}
+#modalDetails {
+  text-align: left;
+}
+#modalItemTitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #d84315;
+}
+#modalCurrentBid {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+#modalBidInput {
+  width: 80%;
+  padding: 0.5rem;
+  margin: 1rem 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+#modalBidBtn {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+#modalFoldBtn, .btn.fold {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.close {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  font-size: 2rem;
+  color: #ff6600;
+  cursor: pointer;
+}

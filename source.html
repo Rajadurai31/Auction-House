@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction House</title>
+    <link rel="stylesheet" href="stylesheet.css">
+</head> 
+<body>
+    <header>
+        <table>
+        <tr>
+            <td style="width: 50%;"><img src="auction logo.png" alt="Aution logo"> </td>
+        <td ><center><h1 style="  text-shadow: 2px 2px #FF0000;">Welcome to the Auction House</h1>
+            <marquee behavior="alternate" direction=""><p>Discover, bid, and win exclusive items!</p></marquee></center>   
+        </td>
+      </tr>
+    </table>
+</header>
+<div class="container" >
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#auctions">Auctions</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact-details">Contact</a></li>
+        </ul>
+    </nav>
+</div>
+<section id="auctions">
+        <div class="hero">
+            <h2>Ongoing Auctions</h2>
+            <div class="auction-list">
+                <div class="auction-item">
+                    <img src="item1.jpg" alt="Item 1">
+                    <h3>Horizen men's Watch</h3>
+                    <p>Current Bid: ₹10,000</p>
+                    <a href="#" class="btn">Bid Now</a>
+                </div>
+                <div class="auction-item">
+                    <img src="item2.jpg" alt="Item 2">
+                    <h3>Vintage Watch</h3>
+                    <p>Current Bid: ₹12000</p>
+                    <a href="#" class="btn">Bid Now</a>
+                </div>
+                <div class="auction-item">
+                    <img src="item3.jpg" alt="Item 3">
+                    <h3>Artwork by John Doe</h3>
+                    <p>Current Bid: ₹3,200</p>
+                    <a href="#" class="btn">Bid Now</a>
+                </div>
+            </div>
+        </div>
+    </section><hr>
+    <div style="text-align:center; margin: 2rem 0;">
+        <button id="showMoreBtn" class="btn" style="background:#ff6600; color:#fff; font-size:1.1rem; padding:0.7rem 2rem; border-radius:6px; border:none; cursor:pointer;">More</button>
+    </div>
+    <section id="upcomingAuction" style="display:none; text-align:center; margin-bottom:2rem;">
+        <h2>Upcoming Auction</h2>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:2rem; margin-bottom:1rem;">
+            <div style="width:180px;">
+                <img src="bike.webp" alt="Bike" class="upcoming-img" style="width:180px; height:140px; object-fit:cover; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); cursor:pointer;">
+                <div style="margin-top:0.5rem; font-weight:bold;">Bike</div>
+            </div>
+            <div style="width:180px;">
+                <img src="car.webp" alt="Car" class="upcoming-img" style="width:180px; height:140px; object-fit:cover; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); cursor:pointer;">
+                <div style="margin-top:0.5rem; font-weight:bold;">Car</div>
+            </div>
+            <div style="width:180px;">
+                <img src="dress.webp" alt="Dress" class="upcoming-img" style="width:180px; height:140px; object-fit:cover; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); cursor:pointer;">
+                <div style="margin-top:0.5rem; font-weight:bold;">Dress</div>
+            </div>
+            <div style="width:180px;">
+                <img src="painting.webp" alt="Painting" class="upcoming-img" style="width:180px; height:140px; object-fit:cover; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); cursor:pointer;">
+                <div style="margin-top:0.5rem; font-weight:bold;">Painting</div>
+            </div>
+        </div>
+        <p>Stay tuned for our next exclusive auction event!</p>
+    </section>
+    <!-- Image Modal for Upcoming Auction -->
+    <div id="imgModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+      <span id="closeImgModal" style="position:absolute; top:30px; right:50px; font-size:3rem; color:#fff; cursor:pointer; z-index:2100;">&times;</span>
+      <img id="imgModalContent" src="" alt="Large Auction" style="max-width:90vw; max-height:80vh; border-radius:18px; box-shadow:0 8px 32px rgba(0,0,0,0.4); display:block; margin:auto;">
+    </div>
+
+    <section id="about" style="margin-top: 4rem;">
+            <h2 style="text-align: center;">About Us</h2>
+        <p style="text-align: center;">We bring together sellers and buyers for exciting auctions. Our platform ensures transparency and fairness for all.</p>
+    </section>
+
+   
+    <footer>
+        <div class="addre">
+            <p>&copy; 2025 Auction House. All rights reserved.</p>
+        </div>
+    </footer>
+    <!-- Contact Details Section -->
+    <section id="contact-details" style="background: #222; color: #fff; padding: 2rem 0; text-align: center;">
+        <h2>Contact Details</h2>
+        <p><strong>Email:</strong> info@auctionhouse.com</p>
+        <p><strong>Phone:</strong> +91 63632837922</p>
+        <p><strong>Address:</strong> 123, Main Street, coimbatore, India</p>
+    </section>
+    <!-- Bid Modal -->
+    <div id="bidModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <h2 id="modalTitle">AUCTION</h2>
+        <div id="modalProduct">
+          <img id="modalImg" src="" alt="Product" style="width:120px;">
+          <div id="modalDetails">
+            <h3 id="modalItemTitle"></h3>
+            <p id="modalCurrentBid"></p>
+          </div>
+        </div>
+        <input type="number" id="modalBidInput" min="1" placeholder="Enter your bid">
+        <div class="modal-actions">
+          <button id="modalBidBtn" class="btn">BID</button>
+          <button id="modalFoldBtn" class="btn fold">FOLD</button>
+        </div>
+      </div>
+    </div>
+    <script src="ajaijs.js"></script> 
+    <script>
+    document.getElementById('showMoreBtn').onclick = function() {
+        var sec = document.getElementById('upcomingAuction');
+        sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+    };
+    // Image modal logic for upcoming auction
+    document.querySelectorAll('.upcoming-img').forEach(function(img) {
+      img.onclick = function() {
+        document.getElementById('imgModalContent').src = this.src;
+        document.getElementById('imgModal').style.display = 'flex';
+      };
+    });
+    document.getElementById('closeImgModal').onclick = function() {
+      document.getElementById('imgModal').style.display = 'none';
+    };
+    document.getElementById('imgModal').onclick = function(e) {
+      if (e.target === this) this.style.display = 'none';
+    };
+    </script>
+</body>
+</html>
