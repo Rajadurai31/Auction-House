@@ -108,38 +108,60 @@
         <div id="signupError" style="color:#e53935; margin-top:0.5rem;"></div>
       </div>
     </div>
+    <script src="api.js"></script>
     <script>
-    document.getElementById('loginForm').onsubmit = function(e) {
+    document.getElementById('loginForm').onsubmit = async function(e) {
         e.preventDefault();
         var user = document.getElementById('username').value;
         var pass = document.getElementById('password').value;
         var errorDiv = document.getElementById('loginError');
-        if(user === 'user' && pass === 'pass') {
+        errorDiv.textContent = '';
+        
+        try {
+            const response = await authAPI.login(user, pass);
             window.location.href = 'source.html';
-        } else {
-            errorDiv.textContent = 'Invalid username or password.';
+        } catch (error) {
+            errorDiv.textContent = error.message || 'Invalid username or password.';
         }
     };
+    
     document.getElementById('showSignup').onclick = function() {
         document.getElementById('signupModal').style.display = 'block';
     };
+    
     document.getElementById('closeSignup').onclick = function() {
         document.getElementById('signupModal').style.display = 'none';
     };
-    document.getElementById('signupForm').onsubmit = function(e) {
+    
+    document.getElementById('signupForm').onsubmit = async function(e) {
         e.preventDefault();
         var user = document.getElementById('signupUsername').value;
         var pass = document.getElementById('signupPassword').value;
         var conf = document.getElementById('signupConfirm').value;
         var errorDiv = document.getElementById('signupError');
+        errorDiv.textContent = '';
+        
         if(pass !== conf) {
             errorDiv.textContent = 'Passwords do not match.';
             return;
         }
-        errorDiv.textContent = 'Account created! (Demo only)';
-        setTimeout(function(){
-            document.getElementById('signupModal').style.display = 'none';
-        }, 1200);
+        
+        if(pass.length < 6) {
+            errorDiv.textContent = 'Password must be at least 6 characters.';
+            return;
+        }
+        
+        try {
+            await authAPI.register(user, pass);
+            errorDiv.textContent = 'Account created successfully! Redirecting...';
+            errorDiv.style.color = '#388e3c';
+            setTimeout(function(){
+                window.location.href = 'source.html';
+            }, 1200);
+        } catch (error) {
+            errorDiv.textContent = error.message || 'Failed to create account.';
+            errorDiv.style.color = '#e53935';
+        }
     };
     </script>
 </body>

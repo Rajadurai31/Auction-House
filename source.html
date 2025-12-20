@@ -714,44 +714,191 @@ style="
 </div>
 
 
+    <script src="api.js"></script>
     <script>
-        // Countdown Timer Function
-        function updateCountdowns() {
-            document.querySelectorAll('.auction-card').forEach(card => {
-                const endTime = new Date(card.dataset.endtime).getTime();
-                const countdown = card.querySelector('.countdown');
-                const now = new Date().getTime();
-                const distance = endTime - now;
+        let auctions = [];
+        let currentAuctionId = null;
 
-                if (distance < 0) {
+        // Format time from seconds
+        function formatTime(seconds) {
+            if (seconds <= 0) return 'ENDED';
+            
+            const days = Math.floor(seconds / (24 * 60 * 60));
+            const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+            const minutes = Math.floor((seconds % (60 * 60)) / 60);
+            const secs = seconds % 60;
+
+            if (days > 0) {
+                return `${days}d ${hours}h ${minutes}m`;
+            } else if (hours > 0) {
+                return `${hours}h ${minutes}m ${secs}s`;
+            } else {
+                return `${minutes}m ${secs}s`;
+            }
+        }
+
+        // Load auctions from API
+        async function loadAuctions() {
+            try {
+                auctions = await auctionAPI.getAll();
+                renderAuctions();
+            } catch (error) {
+                console.error('Error loading auctions:', error);
+                // Check if user is authenticated
+                if (error.message.includes('token') || error.message.includes('401')) {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        // Render auction cards
+        function renderAuctions() {
+            const auctionGrid = document.querySelector('.auction-grid');
+            auctionGrid.innerHTML = '';
+
+            auctions.forEach(auction => {
+                const card = document.createElement('div');
+                card.className = 'auction-card';
+                card.dataset.auctionId = auction.id;
+                card.dataset.endtime = auction.end_time;
+
+                const isActive = auction.isActive;
+                const timeDisplay = isActive ? formatTime(auction.timeLeft) : 'ENDED';
+
+                card.innerHTML = `
+                    <img src="${auction.image_url}" alt="${auction.title}" onerror="this.src='https://via.placeholder.com/500x300?text=No+Image'">
+                    <div class="card-content">
+                        <h3>${auction.title}</h3>
+                        <div class="timer">
+                            ⏰ <span class="countdown">${timeDisplay}</span>
+                        </div>
+                        <div class="bid-info">
+                            <span class="current-bid">₹${parseFloat(auction.current_bid).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn bid-btn" ${!isActive ? 'disabled' : ''}>Place Bid</button>
+                            <button class="btn buy-btn" ${!isActive ? 'disabled' : ''}>Buy Now</button>
+                        </div>
+                    </div>
+                `;
+
+                auctionGrid.appendChild(card);
+            });
+
+            // Re-attach event listeners
+            attachEventListeners();
+        }
+
+        // Update countdowns
+        function updateCountdowns() {
+            auctions.forEach(auction => {
+                const card = document.querySelector(`[data-auction-id="${auction.id}"]`);
+                if (!card) return;
+
+                const countdown = card.querySelector('.countdown');
+                const buttons = card.querySelectorAll('.btn');
+                
+                if (auction.timeLeft <= 0 || !auction.isActive) {
                     countdown.textContent = 'ENDED';
                     countdown.style.color = '#ff4444';
-                    card.querySelectorAll('.btn').forEach(btn => {
+                    buttons.forEach(btn => {
                         btn.disabled = true;
                         btn.style.opacity = '0.5';
                         btn.style.cursor = 'not-allowed';
                     });
-                    return;
-                }
-
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                if (days > 0) {
-                    countdown.textContent = `${days}d ${hours}h ${minutes}m`;
-                } else if (hours > 0) {
-                    countdown.textContent = `${hours}h ${minutes}m ${seconds}s`;
                 } else {
-                    countdown.textContent = `${minutes}m ${seconds}s`;
+                    countdown.textContent = formatTime(auction.timeLeft);
+                    countdown.style.color = '';
+                    auction.timeLeft--; // Decrement for next update
                 }
             });
         }
 
-        // Update countdowns every second
-        updateCountdowns();
-        setInterval(updateCountdowns, 1000);
+        // Attach event listeners
+        function attachEventListeners() {
+            // Bid Modal functionality
+            const bidModal = document.getElementById('bidModal');
+            const closeModal = document.getElementById('closeModal');
+            const foldBtn = document.getElementById('foldBtn');
+            const submitBid = document.getElementById('submitBid');
+
+            document.querySelectorAll('.bid-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const card = this.closest('.auction-card');
+                    const auctionId = parseInt(card.dataset.auctionId);
+                    const auction = auctions.find(a => a.id === auctionId);
+                    
+                    if (!auction || !auction.isActive) {
+                        alert('This auction has ended');
+                        return;
+                    }
+
+                    currentAuctionId = auctionId;
+                    document.getElementById('modalTitle').textContent = auction.title;
+                    document.getElementById('modalBid').textContent = `Current Bid: ₹${parseFloat(auction.current_bid).toLocaleString('en-IN')}`;
+                    document.getElementById('modalImg').src = auction.image_url;
+                    document.getElementById('bidInput').placeholder = `Min bid: ₹${(parseFloat(auction.current_bid) + 1000).toLocaleString('en-IN')}`;
+                    document.getElementById('bidInput').value = '';
+                    bidModal.style.display = 'flex';
+                });
+            });
+
+            // Buy Now functionality
+            document.querySelectorAll('.buy-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const card = this.closest('.auction-card');
+                    const auctionId = parseInt(card.dataset.auctionId);
+                    const auction = auctions.find(a => a.id === auctionId);
+                    
+                    if (!auction || !auction.isActive) {
+                        alert('This auction has ended');
+                        return;
+                    }
+
+                    const buyNowPrice = auction.buy_now_price || (auction.current_bid * 1.5);
+                    if (confirm(`Buy "${auction.title}" now for ₹${parseFloat(buyNowPrice).toLocaleString('en-IN')}?`)) {
+                        alert(`Congratulations! You've purchased "${auction.title}" for ₹${parseFloat(buyNowPrice).toLocaleString('en-IN')}`);
+                    }
+                });
+            });
+
+            closeModal.addEventListener('click', () => bidModal.style.display = 'none');
+            foldBtn.addEventListener('click', () => bidModal.style.display = 'none');
+            
+            submitBid.addEventListener('click', async function() {
+                const bidAmount = parseFloat(document.getElementById('bidInput').value);
+                if (!bidAmount || isNaN(bidAmount)) {
+                    alert('Please enter a valid bid amount');
+                    return;
+                }
+
+                try {
+                    await bidAPI.placeBid(currentAuctionId, bidAmount);
+                    
+                    // Update local auction data
+                    const auction = auctions.find(a => a.id === currentAuctionId);
+                    if (auction) {
+                        auction.current_bid = bidAmount;
+                    }
+                    
+                    // Show success popup
+                    const popup = document.getElementById('successPopup');
+                    const popupMessage = document.getElementById('popupMessage');
+                    popupMessage.textContent = `Your bid of ₹${bidAmount.toLocaleString('en-IN')} was placed successfully!`;
+                    popup.style.display = 'flex';
+                    
+                    bidModal.style.display = 'none';
+                    document.getElementById('bidInput').value = '';
+                    
+                    // Refresh auctions
+                    await loadAuctions();
+                } catch (error) {
+                    alert(error.message || 'Failed to place bid');
+                }
+            });
+        }
 
         // Show/Hide upcoming auctions
         document.getElementById('showMoreBtn').addEventListener('click', function() {
@@ -764,58 +911,6 @@ style="
                 this.textContent = 'Show Upcoming Auctions';
             }
         });
-
-        // Bid Modal functionality
-        const bidModal = document.getElementById('bidModal');
-        const closeModal = document.getElementById('closeModal');
-        const foldBtn = document.getElementById('foldBtn');
-        const submitBid = document.getElementById('submitBid');
-
-        document.querySelectorAll('.bid-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const card = this.closest('.auction-card');
-                const item = card.dataset.item;
-                const bid = card.dataset.bid;
-                const img = card.dataset.img;
-
-                document.getElementById('modalTitle').textContent = item;
-                document.getElementById('modalBid').textContent = `Current Bid: ₹${parseInt(bid).toLocaleString('en-IN')}`;
-                document.getElementById('modalImg').src = img;
-                document.getElementById('bidInput').placeholder = `Min bid: ₹${(parseInt(bid) + 1000).toLocaleString('en-IN')}`;
-                bidModal.style.display = 'flex';
-            });
-        });
-
-        // Buy Now functionality
-        document.querySelectorAll('.buy-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const card = this.closest('.auction-card');
-                const item = card.dataset.item;
-                const bid = card.dataset.bid;
-                const buyNowPrice = parseInt(bid) * 1.5;
-
-                if (confirm(`Buy "${item}" now for ₹${buyNowPrice.toLocaleString('en-IN')}?`)) {
-                    alert(`Congratulations! You've purchased "${item}" for ₹${buyNowPrice.toLocaleString('en-IN')}`);
-                }
-            });
-        });
-
-        closeModal.addEventListener('click', () => bidModal.style.display = 'none');
-        foldBtn.addEventListener('click', () => bidModal.style.display = 'none');
-        
-        submitBid.addEventListener('click', function() {
-            const bidAmount = document.getElementById('bidInput').value;
-            if (bidAmount) {
-                alert(`Bid of ₹${parseInt(bidAmount).toLocaleString('en-IN')} placed successfully!`);
-                bidModal.style.display = 'none';
-                document.getElementById('bidInput').value = '';
-            } else {
-                alert('Please enter a bid amount');
-            }
-        });
-        
 
         // Image Modal for upcoming items
         const imgModal = document.getElementById('imgModal');
@@ -837,11 +932,39 @@ style="
         // Close modals on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                bidModal.style.display = 'none';
+                document.getElementById('bidModal').style.display = 'none';
                 imgModal.style.display = 'none';
+                document.getElementById('successPopup').style.display = 'none';
             }
         });
-        
+
+        // Success popup close
+        window.closeSuccessPopup = function() {
+            document.getElementById('successPopup').style.display = 'none';
+        };
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            try {
+                await authAPI.verify();
+            } catch (error) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            await loadAuctions();
+            
+            // Update countdowns every second
+            setInterval(() => {
+                updateCountdowns();
+            }, 1000);
+            
+            // Refresh auctions every 30 seconds
+            setInterval(async () => {
+                await loadAuctions();
+            }, 30000);
+        });
     </script>
     
         
