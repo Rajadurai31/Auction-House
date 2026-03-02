@@ -1,14 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { initDatabase, User, Auction, Bid } = require('./database');
+require('dotenv').config();
+
+const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const auctionRoutes = require('./routes/auctions');
 const bidRoutes = require('./routes/bids');
+const Auction = require('./models/Auction');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Connect to MongoDB
+connectDB();
 
 // Middleware
 app.use(cors());
@@ -21,12 +27,18 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
+        return res.status(401).json({ 
+            success: false,
+            error: 'Access token required' 
+        });
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).json({ error: 'Invalid or expired token' });
+            return res.status(403).json({ 
+                success: false,
+                error: 'Invalid or expired token' 
+            });
         }
         req.user = user;
         next();
@@ -40,29 +52,68 @@ app.use('/api/bids', authenticateToken, bidRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Auction House API is running' });
+    res.json({ 
+        success: true,
+        status: 'ok', 
+        message: 'Auction House API is running',
+        database: 'MongoDB Atlas',
+        timestamp: new Date().toISOString()
+    });
 });
 
-// Initialize database and start server
-initDatabase()
-    .then(() => {
-        // Seed some initial data if database is empty
-        seedInitialData();
-        
-        app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error('Failed to initialize database:', err);
-        process.exit(1);
+// API Documentation
+app.get('/api', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Auction House API',
+        version: '1.0.0',
+        endpoints: {
+            auth: {
+                register: 'POST /api/auth/register',
+                login: 'POST /api/auth/login',
+                verify: 'GET /api/auth/verify'
+            },
+            auctions: {
+                getAll: 'GET /api/auctions',
+                getActive: 'GET /api/auctions/active',
+                getEnded: 'GET /api/auctions/ended',
+                getById: 'GET /api/auctions/:id',
+                create: 'POST /api/auctions'
+            },
+            bids: {
+                placeBid: 'POST /api/bids',
+                getByAuction: 'GET /api/bids/auction/:auctionId',
+                getUserBids: 'GET /api/bids/my-bids',
+                getHighestBid: 'GET /api/bids/highest/:auctionId',
+                getBidHistory: 'GET /api/bids/history/:auctionId'
+            }
+        }
     });
+});
 
-// Seed initial auction data
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ 
+        success: false,
+        error: 'Internal server error' 
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ 
+        success: false,
+        error: 'Endpoint not found' 
+    });
+});
+
+// Seed initial data
 async function seedInitialData() {
     try {
-        const auctions = await Auction.getAll();
-        if (auctions.length === 0) {
+        const auctionCount = await Auction.countDocuments();
+        
+        if (auctionCount === 0) {
             const now = new Date();
             const sampleAuctions = [
                 {
@@ -72,7 +123,7 @@ async function seedInitialData() {
                     starting_bid: 85000,
                     current_bid: 85000,
                     buy_now_price: 127500,
-                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days from now
+                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000) // 2 days from now
                 },
                 {
                     title: 'Painting',
@@ -81,7 +132,7 @@ async function seedInitialData() {
                     starting_bid: 45000,
                     current_bid: 45000,
                     buy_now_price: 67500,
-                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day from now
+                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000) // 1 day from now
                 },
                 {
                     title: 'Abstract Canvas Art',
@@ -90,7 +141,7 @@ async function seedInitialData() {
                     starting_bid: 125000,
                     current_bid: 125000,
                     buy_now_price: 187500,
-                    end_time: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days from now
+                    end_time: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
                 },
                 {
                     title: 'Diamond Necklace',
@@ -99,7 +150,7 @@ async function seedInitialData() {
                     starting_bid: 250000,
                     current_bid: 250000,
                     buy_now_price: 375000,
-                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
                 },
                 {
                     title: 'Antique Violin',
@@ -108,7 +159,7 @@ async function seedInitialData() {
                     starting_bid: 95000,
                     current_bid: 95000,
                     buy_now_price: 142500,
-                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000)
                 },
                 {
                     title: 'Designer Handbag',
@@ -117,7 +168,7 @@ async function seedInitialData() {
                     starting_bid: 65000,
                     current_bid: 65000,
                     buy_now_price: 97500,
-                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
                 },
                 {
                     title: 'Rare Mobile',
@@ -126,7 +177,7 @@ async function seedInitialData() {
                     starting_bid: 18000,
                     current_bid: 18000,
                     buy_now_price: 27000,
-                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000)
                 },
                 {
                     title: 'Rare Vinyl Records',
@@ -135,7 +186,7 @@ async function seedInitialData() {
                     starting_bid: 55000,
                     current_bid: 55000,
                     buy_now_price: 82500,
-                    end_time: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
                 },
                 {
                     title: 'Luxury Fountain Pen',
@@ -144,7 +195,7 @@ async function seedInitialData() {
                     starting_bid: 32000,
                     current_bid: 32000,
                     buy_now_price: 48000,
-                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
                 },
                 {
                     title: 'Vintage Telescope',
@@ -153,19 +204,26 @@ async function seedInitialData() {
                     starting_bid: 72000,
                     current_bid: 72000,
                     buy_now_price: 108000,
-                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString()
+                    end_time: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000)
                 }
             ];
 
-            for (const auction of sampleAuctions) {
-                await Auction.create(auction);
-            }
-            console.log('Seeded initial auction data');
+            await Auction.insertMany(sampleAuctions);
+            console.log('✅ Seeded initial auction data');
         }
     } catch (error) {
-        console.error('Error seeding data:', error);
+        console.error('❌ Error seeding data:', error);
     }
 }
 
-module.exports = { authenticateToken, JWT_SECRET };
+// Start server
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📊 API Documentation: http://localhost:${PORT}/api`);
+    console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
+    
+    // Seed data after server starts
+    seedInitialData();
+});
 
+module.exports = { authenticateToken, JWT_SECRET };

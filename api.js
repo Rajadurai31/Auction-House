@@ -1,5 +1,5 @@
 // API utility functions for frontend
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
 // Store token in localStorage
 function setAuthToken(token) {
