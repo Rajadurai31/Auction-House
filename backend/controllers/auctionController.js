@@ -1,4 +1,5 @@
 const Auction = require('../models/Auction');
+const WebSocketService = require('../services/websocketService');
 
 class AuctionController {
     // Get all auctions
@@ -110,6 +111,9 @@ class AuctionController {
             };
 
             const auction = await Auction.createAuction(auctionData);
+
+            // Broadcast new auction via WebSocket
+            WebSocketService.broadcastNewAuction(auction);
 
             res.status(201).json({
                 success: true,

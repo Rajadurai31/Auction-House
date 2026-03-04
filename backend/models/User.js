@@ -33,7 +33,12 @@ userSchema.pre('save', async function() {
 
 // Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+    try {
+        return await bcrypt.compare(candidatePassword, this.password);
+    } catch (error) {
+        console.error('Password comparison error:', error);
+        return false;
+    }
 };
 
 // Static method to find by username
@@ -42,8 +47,8 @@ userSchema.statics.findByUsername = async function(username) {
 };
 
 // Static method to find by ID
-userSchema.statics.findById = async function(id) {
-    return await this.findById(id);
+userSchema.statics.findUserById = async function(id) {
+    return await this.findOne({ _id: id });
 };
 
 // Remove password from JSON response

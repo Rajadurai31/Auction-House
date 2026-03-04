@@ -1,5 +1,7 @@
 const Auction = require('../models/Auction');
 const Bid = require('../models/Bid');
+const User = require('../models/User');
+const WebSocketService = require('../services/websocketService');
 
 class BidController {
     // Place a bid
@@ -49,6 +51,16 @@ class BidController {
                 },
                 { status: 'outbid' }
             );
+
+            // Get user details for WebSocket broadcast
+            const user = await User.findUserById(userId);
+            
+            // Broadcast new bid via WebSocket
+            WebSocketService.broadcastNewBid(auctionId, {
+                bidAmount,
+                userId,
+                username: user?.username || 'Unknown'
+            });
 
             res.status(201).json({
                 success: true,

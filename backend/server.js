@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const http = require('http');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
@@ -8,10 +9,17 @@ const authRoutes = require('./routes/auth');
 const auctionRoutes = require('./routes/auctions');
 const bidRoutes = require('./routes/bids');
 const Auction = require('./models/Auction');
+const AuctionWebSocket = require('./websocket');
+const WebSocketService = require('./services/websocketService');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Initialize WebSocket server
+const auctionWebSocket = new AuctionWebSocket(server);
+WebSocketService.setWebSocket(auctionWebSocket);
 
 // Connect to MongoDB
 connectDB();
@@ -217,13 +225,18 @@ async function seedInitialData() {
 }
 
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📊 API Documentation: http://localhost:${PORT}/api`);
     console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🔌 WebSocket: ws://localhost:${PORT}`);
     
     // Seed data after server starts
     seedInitialData();
 });
 
-module.exports = { authenticateToken, JWT_SECRET };
+module.exports = { 
+    authenticateToken, 
+    JWT_SECRET,
+    auctionWebSocket 
+};

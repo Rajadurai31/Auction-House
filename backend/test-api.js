@@ -1,7 +1,7 @@
 // Simple API test script
 const axios = require('axios');
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'http://localhost:3003/api';
 
 async function testAPI() {
     console.log('🧪 Testing Auction House API...\n');

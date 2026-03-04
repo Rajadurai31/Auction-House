@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Test Frontend Login</h2>
+        
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" value="testuser">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="password123">
+        </div>
+        
+        <div class="form-group">
+            <button onclick="testSignup()">Test Signup</button>
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testVerify()">Test Verify Token</button>
+        </div>
+        
+        <div id="result" class="result hidden"></div>
+        
+        <div id="serverInfo" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+            <strong>Server Info:</strong><br>
+            API Base: http://localhost:3003/api<br>
+            Status: <span id="serverStatus">Checking...</span>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3003/api';
+        let authToken = '';
+        
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                document.getElementById('serverStatus').innerHTML = 
+                    `<span style="color: green">✅ ${data.status} - ${data.message}</span>`;
+                return true;
+            } catch (error) {
+                document.getElementById('serverStatus').innerHTML = 
+                    `<span style="color: red">❌ Server not responding</span>`;
+                return false;
+            }
+        }
+        
+        // Show result
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+            resultDiv.innerHTML = message;
+            resultDiv.classList.remove('hidden');
+        }
+        
+        // Test signup
+        async function testSignup() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showResult('Please enter username and password', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    showResult(`✅ Signup successful!<br>User: ${data.user.username}<br>Token: ${data.token.substring(0, 50)}...`);
+                } else {
+                    showResult(`❌ Signup failed: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, true);
+            }
+        }
+        
+        // Test login
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showResult('Please enter username and password', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    showResult(`✅ Login successful!<br>User: ${data.user.username}<br>Token: ${data.token.substring(0, 50)}...`);
+                } else {
+                    showResult(`❌ Login failed: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, true);
+            }
+        }
+        
+        // Test token verification
+        async function testVerify() {
+            if (!authToken) {
+                showResult('No token available. Please signup or login first.', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Token verified!<br>User: ${data.user.username}`);
+                } else {
+                    showResult(`❌ Token verification failed: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, true);
+            }
+        }
+        
+        // Initialize
+        checkServerStatus();
+    </script>
+</body>
+</html>

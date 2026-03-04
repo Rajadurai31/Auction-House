@@ -71,7 +71,7 @@ auctionSchema.statics.getAll = async function() {
 
 // Static method to get auction by ID
 auctionSchema.statics.getById = async function(id) {
-    return await this.findById(id);
+    return await this.findOne({ _id: id });
 };
 
 // Static method to create auction
