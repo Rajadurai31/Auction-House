@@ -47,6 +47,16 @@ const auctionSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'ended', 'sold'],
         default: 'active'
+    },
+    active_bidders: {
+        type: Number,
+        default: 0,
+        min: [0, 'Active bidders cannot be negative']
+    },
+    total_bids: {
+        type: Number,
+        default: 0,
+        min: [0, 'Total bids cannot be negative']
     }
 }, {
     timestamps: true

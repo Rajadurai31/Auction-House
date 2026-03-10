@@ -37,8 +37,15 @@ class BidController {
             // Create bid record
             const bid = await Bid.createBid(auctionId, userId, bidAmount);
 
-            // Update auction current bid
-            await Auction.updateBid(auctionId, bidAmount);
+            // Update auction current bid and increment counters
+            await Auction.findByIdAndUpdate(auctionId, {
+                current_bid: bidAmount,
+                $inc: { 
+                    total_bids: 1,
+                    // Only increment active_bidders if this is user's first bid on this auction
+                    ...(await Bid.countDocuments({ auction: auctionId, bidder: userId }) === 0 ? { active_bidders: 1 } : {})
+                }
+            });
 
             // Mark previous highest bid as outbid
             await Bid.updateMany(
