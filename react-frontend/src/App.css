@@ -1557,3 +1557,225 @@ body {
     align-self: flex-end;
   }
 }
+/* E-commerce Auction Enhancements */
+.auction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 25px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+}
+
+.header-left h1 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
+.cart-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.cart-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 2px solid #007bff;
+}
+
+.cart-icon {
+  font-size: 24px;
+}
+
+.cart-count {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.cart-total {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 18px;
+}
+
+.checkout-btn {
+  padding: 10px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.checkout-btn:hover {
+  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-summary {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* E-commerce Action Buttons */
+.ecommerce-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.cart-btn, .watchlist-btn, .buy-now-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  min-width: 100px;
+}
+
+.cart-btn {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #333;
+}
+
+.cart-btn.in-cart {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.cart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
+
+.cart-btn.in-cart:hover {
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.watchlist-btn {
+  background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+  color: white;
+}
+
+.watchlist-btn.in-watchlist {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #333;
+}
+
+.watchlist-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.watchlist-btn.in-watchlist:hover {
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
+
+.buy-now-btn {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  color: white;
+}
+
+.buy-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* Responsive Design for E-commerce Auction */
+@media (max-width: 768px) {
+  .auction-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .header-left, .header-right {
+    width: 100%;
+  }
+  
+  .cart-summary {
+    align-items: center;
+  }
+  
+  .filter-section {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .stats-summary {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .ecommerce-actions {
+    flex-direction: column;
+  }
+  
+  .cart-btn, .watchlist-btn, .buy-now-btn {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-buttons {
+    flex-direction: column;
+  }
+  
+  .filter-btn {
+    width: 100%;
+  }
+}
