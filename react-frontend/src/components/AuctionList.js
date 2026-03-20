@@ -1,371 +1,301 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import { toast } from 'react-toastify';
-import sampleProducts from '../data/sampleProducts';
+import { FiClock, FiUsers, FiTrendingUp, FiFilter } from 'react-icons/fi';
+import { HiOutlineFire } from 'react-icons/hi';
 
 const AuctionList = () => {
     const [auctions, setAuctions] = useState([]);
+    const [filter, setFilter] = useState('all'); // all, active, ending, trending
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all'); // 'all', 'active', 'ended'
-    const [cart, setCart] = useState([]);
-    const [watchlist, setWatchlist] = useState([]);
-    const { isAuthenticated } = useAuth();
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        fetchAuctions();
-        // Load cart and watchlist from localStorage
-        const savedCart = localStorage.getItem('auctionCart');
-        const savedWatchlist = localStorage.getItem('auctionWatchlist');
-        if (savedCart) setCart(JSON.parse(savedCart));
-        if (savedWatchlist) setWatchlist(JSON.parse(savedWatchlist));
-    }, [filter]);
-
-    const fetchAuctions = async () => {
-        setLoading(true);
-        try {
-            let data;
-            if (filter === 'active') {
-                data = await api.getActive();
-            } else if (filter === 'ended') {
-                data = await api.getEnded();
-            } else {
-                data = await api.getAll();
+        // Mock data - in a real app, this would come from an API
+        const mockAuctions = [
+            {
+                id: 1,
+                title: "Vintage Rolex Submariner",
+                description: "Rare vintage Rolex Submariner 1680 from 1978, excellent condition",
+                currentBid: 12500,
+                startingBid: 8000,
+                endTime: "2024-12-31T23:59:59",
+                bids: 42,
+                bidders: 18,
+                image: "/public/golden.png",
+                category: "Watches",
+                timeLeft: "2d 4h",
+                isTrending: true,
+                isEndingSoon: true
+            },
+            {
+                id: 2,
+                title: "Tesla Model S Plaid 2023",
+                description: "Fully loaded Tesla Model S Plaid, 2023 model with FSD",
+                currentBid: 85000,
+                startingBid: 70000,
+                endTime: "2024-12-25T18:00:00",
+                bids: 89,
+                bidders: 32,
+                image: "/public/car.webp",
+                category: "Vehicles",
+                timeLeft: "3d 12h",
+                isTrending: true
+            },
+            {
+                id: 3,
+                title: "Original Picasso Sketch",
+                description: "Original pencil sketch by Pablo Picasso, 1965",
+                currentBid: 250000,
+                startingBid: 200000,
+                endTime: "2024-12-28T12:00:00",
+                bids: 15,
+                bidders: 8,
+                image: "/public/painting.webp",
+                category: "Art",
+                timeLeft: "5d 6h",
+                isEndingSoon: true
+            },
+            {
+                id: 4,
+                title: "Limited Edition Sneakers",
+                description: "Nike Air Jordan 1 Retro High OG, Size 10",
+                currentBid: 1200,
+                startingBid: 800,
+                endTime: "2024-12-15T10:00:00",
+                bids: 156,
+                bidders: 64,
+                image: "/public/shoe.webp",
+                category: "Fashion",
+                timeLeft: "1d 4h",
+                isEndingSoon: true
+            },
+            {
+                id: 5,
+                title: "Antique Persian Rug",
+                description: "Hand-woven Persian rug, 8x10 ft, 1920s",
+                currentBid: 4500,
+                startingBid: 3000,
+                endTime: "2024-12-20T15:30:00",
+                bids: 32,
+                bidders: 15,
+                image: "/public/item1.jpg",
+                category: "Antiques",
+                timeLeft: "4d 8h"
+            },
+            {
+                id: 6,
+                title: "Rare Whiskey Collection",
+                description: "Macallan 50 Year Old Single Malt Scotch",
+                currentBid: 25000,
+                startingBid: 20000,
+                endTime: "2024-12-22T20:00:00",
+                bids: 28,
+                bidders: 12,
+                image: "/public/item2.jpg",
+                category: "Collectibles",
+                timeLeft: "6d 2h"
             }
-            
-            if (data.success && data.auctions && data.auctions.length > 0) {
-                setAuctions(data.auctions);
-            } else {
-                // Use sample products if no auctions from API
-                const productsWithCartStatus = sampleProducts.map(product => ({
-                    ...product,
-                    _id: product.id,
-                    image_url: product.image,
-                    starting_bid: product.startingBid,
-                    current_bid: product.currentBid,
-                    end_time: product.endTime.toISOString(),
-                    total_bids: product.totalBids,
-                    active_bidders: product.activeBidders,
-                    inCart: cart.some(item => item.id === product.id),
-                    inWatchlist: watchlist.some(item => item.id === product.id)
-                }));
-                setAuctions(productsWithCartStatus);
-            }
-        } catch (error) {
-            console.error('Error fetching auctions:', error);
-            // Use sample products on error
-            const productsWithCartStatus = sampleProducts.map(product => ({
-                ...product,
-                _id: product.id,
-                image_url: product.image,
-                starting_bid: product.startingBid,
-                current_bid: product.currentBid,
-                end_time: product.endTime.toISOString(),
-                total_bids: product.totalBids,
-                active_bidders: product.activeBidders,
-                inCart: cart.some(item => item.id === product.id),
-                inWatchlist: watchlist.some(item => item.id === product.id)
-            }));
-            setAuctions(productsWithCartStatus);
-            toast.info('Using sample auction products');
-        } finally {
-            setLoading(false);
-        }
-    };
+        ];
 
-    const formatTimeRemaining = (endTime) => {
-        const now = new Date();
-        const end = new Date(endTime);
-        const diffMs = end - now;
-        
-        if (diffMs <= 0) return 'Ended';
-        
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-        
-        if (diffDays > 0) return `${diffDays}d ${diffHours}h`;
-        if (diffHours > 0) return `${diffHours}h ${diffMinutes}m`;
-        if (diffMinutes > 0) return `${diffMinutes}m ${diffSeconds}s`;
-        return `${diffSeconds}s`;
-    };
+        setAuctions(mockAuctions);
+        setLoading(false);
+    }, []);
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-IN', {
+        return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'INR',
+            currency: 'USD',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         }).format(amount);
     };
 
-    const addToCart = (product) => {
-        const productToAdd = {
-            id: product._id || product.id,
-            title: product.title,
-            image: product.image_url || product.image,
-            currentBid: product.current_bid || product.currentBid,
-            endTime: product.end_time || product.endTime,
-            quantity: 1
-        };
-        
-        const newCart = [...cart, productToAdd];
-        setCart(newCart);
-        localStorage.setItem('auctionCart', JSON.stringify(newCart));
-        
-        // Update auction inCart status
-        setAuctions(prev => prev.map(auction => 
-            auction._id === product._id ? { ...auction, inCart: true } : auction
-        ));
-        
-        toast.success(`${product.title} added to cart!`);
-    };
+    const filteredAuctions = auctions.filter(auction => {
+        if (filter === 'all') return true;
+        if (filter === 'trending') return auction.isTrending;
+        if (filter === 'ending') return auction.isEndingSoon;
+        return true;
+    }).filter(auction => 
+        auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        auction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        auction.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-    const removeFromCart = (productId) => {
-        const newCart = cart.filter(item => item.id !== productId);
-        setCart(newCart);
-        localStorage.setItem('auctionCart', JSON.stringify(newCart));
-        
-        // Update auction inCart status
-        setAuctions(prev => prev.map(auction => 
-            auction._id === productId ? { ...auction, inCart: false } : auction
-        ));
-        
-        toast.info('Item removed from cart');
-    };
-
-    const toggleWatchlist = (product) => {
-        const productId = product._id || product.id;
-        const isInWatchlist = watchlist.some(item => item.id === productId);
-        
-        if (isInWatchlist) {
-            const newWatchlist = watchlist.filter(item => item.id !== productId);
-            setWatchlist(newWatchlist);
-            localStorage.setItem('auctionWatchlist', JSON.stringify(newWatchlist));
-            
-            // Update auction watchlist status
-            setAuctions(prev => prev.map(auction => 
-                auction._id === productId ? { ...auction, inWatchlist: false } : auction
-            ));
-            
-            toast.info(`${product.title} removed from watchlist`);
-        } else {
-            const productToAdd = {
-                id: productId,
-                title: product.title,
-                image: product.image_url || product.image,
-                currentBid: product.current_bid || product.currentBid,
-                endTime: product.end_time || product.endTime
-            };
-            
-            const newWatchlist = [...watchlist, productToAdd];
-            setWatchlist(newWatchlist);
-            localStorage.setItem('auctionWatchlist', JSON.stringify(newWatchlist));
-            
-            // Update auction watchlist status
-            setAuctions(prev => prev.map(auction => 
-                auction._id === productId ? { ...auction, inWatchlist: true } : auction
-            ));
-            
-            toast.success(`${product.title} added to watchlist!`);
-        }
-    };
-
-    const getCartTotal = () => {
-        return cart.reduce((total, item) => total + item.currentBid, 0);
-    };
-
-    const proceedToCheckout = () => {
-        if (cart.length === 0) {
-            toast.error('Your cart is empty');
-            return;
-        }
-        toast.success(`Proceeding to checkout with ${cart.length} items. Total: ${formatCurrency(getCartTotal())}`);
-        // In a real app, this would navigate to checkout page
-    };
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            </div>
+        );
+    }
 
     return (
-        <div className="auction-list-container">
-            <div className="auction-header">
-                <div className="header-left">
-                    <h1>Live Auctions Marketplace</h1>
-                    <p className="subtitle">Bid on exclusive items with e-commerce style cart</p>
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="container mx-auto px-4">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Live Auctions</h1>
+                    <p className="text-gray-600">Discover and bid on amazing items from around the world</p>
                 </div>
-                <div className="header-right">
-                    <div className="cart-summary">
-                        <div className="cart-info">
-                            <span className="cart-icon">🛒</span>
-                            <span className="cart-count">{cart.length} items</span>
-                            <span className="cart-total">{formatCurrency(getCartTotal())}</span>
+
+                {/* Filters and Search */}
+                <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex-1">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search auctions, categories, or sellers..."
+                                    className="w-full px-4 py-3 pl-12 pr-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
                         </div>
-                        {cart.length > 0 && (
-                            <button 
-                                className="btn btn-primary checkout-btn"
-                                onClick={proceedToCheckout}
+                        
+                        <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+                            <button
+                                onClick={() => setFilter('all')}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                             >
-                                Checkout
+                                All Auctions
                             </button>
-                        )}
+                            <button
+                                onClick={() => setFilter('trending')}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${filter === 'trending' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                <HiOutlineFire className="w-4 h-4" />
+                                Trending
+                            </button>
+                            <button
+                                onClick={() => setFilter('ending')}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${filter === 'ending' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                <FiClock className="w-4 h-4" />
+                                Ending Soon
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="filter-section">
-                <div className="filter-buttons">
-                    <button 
-                        className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                        onClick={() => setFilter('all')}
-                    >
-                        All Auctions
-                    </button>
-                    <button 
-                        className={`filter-btn ${filter === 'active' ? 'active' : ''}`}
-                        onClick={() => setFilter('active')}
-                    >
-                        Active
-                    </button>
-                    <button 
-                        className={`filter-btn ${filter === 'ended' ? 'active' : ''}`}
-                        onClick={() => setFilter('ended')}
-                    >
-                        Ended
-                    </button>
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div className="text-2xl font-bold text-gray-900">{auctions.length}</div>
+                        <div className="text-sm text-gray-500">Active Auctions</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div className="text-2xl font-bold text-gray-900">$2.4M+</div>
+                        <div className="text-sm text-gray-500">Total Value</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div className="text-2xl font-bold text-gray-900">1,234</div>
+                        <div className="text-sm text-gray-500">Active Bidders</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div className="text-2xl font-bold text-gray-900">98%</div>
+                        <div className="text-sm text-gray-500">Success Rate</div>
+                    </div>
                 </div>
-                <div className="stats-summary">
-                    <span className="stat-item">📊 {auctions.length} Products</span>
-                    <span className="stat-item">👥 {auctions.reduce((sum, a) => sum + (a.active_bidders || 0), 0)} Active Bidders</span>
-                    <span className="stat-item">🔥 {auctions.reduce((sum, a) => sum + (a.total_bids || 0), 0)} Total Bids</span>
-                </div>
-            </div>
 
-            {loading ? (
-                <div className="loading-spinner">Loading auctions...</div>
-            ) : auctions.length === 0 ? (
-                <div className="no-auctions">
-                    <p>No auctions found.</p>
-                </div>
-            ) : (
-                <div className="auction-grid">
-                    {auctions.map((auction) => (
-                        <div key={auction._id} className="auction-card">
-                            <div className="auction-image">
-                                <img 
-                                    src={auction.image_url || auction.image} 
-                                    alt={auction.title}
-                                    onError={(e) => {
-                                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNFNUU1RTUiLz48dGV4dCB4PSIyNTAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+QXVjdGlvbiBJbWFnZTwvdGV4dD48L3N2Zz4=';
-                                    }}
-                                />
-                                <div className="auction-status">
-                                    <span className={`status-badge ${new Date(auction.end_time) > new Date() ? 
-                                        (formatTimeRemaining(auction.end_time).includes('h') || formatTimeRemaining(auction.end_time).includes('d') ? 'upcoming' : 'live') : 
-                                        'ended'}`}>
-                                        {new Date(auction.end_time) > new Date() ? 
-                                            (formatTimeRemaining(auction.end_time).includes('h') || formatTimeRemaining(auction.end_time).includes('d') ? 'Upcoming' : 'Live') : 
-                                            'Ended'}
+                {/* Auction Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredAuctions.map((auction) => (
+                        <div key={auction.id} className="auction-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                            <div className="relative">
+                                <div className="h-48 overflow-hidden">
+                                    <img 
+                                        src={auction.image} 
+                                        alt={auction.title}
+                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                    />
+                                </div>
+                                <div className="absolute top-3 right-3">
+                                    {auction.isTrending && (
+                                        <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                                            <HiOutlineFire className="w-4 h-4" />
+                                            Trending
+                                        </span>
+                                    )}
+                                    {auction.isEndingSoon && (
+                                        <span className="bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full">
+                                            Ending Soon
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="absolute bottom-3 left-3">
+                                    <span className="bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">
+                                        {auction.category}
                                     </span>
-                                    {auction.active_bidders > 0 && (
-                                        <span className="status-badge bidders-badge">
-                                            👥 {auction.active_bidders}
-                                        </span>
-                                    )}
                                 </div>
                             </div>
-                            <div className="auction-details">
-                                <h3>{auction.title}</h3>
-                                <p className="auction-description">{auction.description}</p>
+                            
+                            <div className="p-6">
+                                <div className="flex justify-between items-start mb-3">
+                                    <h3 className="text-lg font-bold text-gray-900 line-clamp-1">
+                                        {auction.title}
+                                    </h3>
+                                    <span className="text-sm text-gray-500">{auction.timeLeft} left</span>
+                                </div>
                                 
-                                <div className="auction-info">
-                                    <div className="info-row">
-                                        <span className="info-label">Current Bid:</span>
-                                        <span className="info-value highlight">{formatCurrency(auction.current_bid)}</span>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Starting Bid:</span>
-                                        <span className="info-value">{formatCurrency(auction.starting_bid)}</span>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Time Remaining:</span>
-                                        <span className="info-value time-remaining">
-                                            {formatTimeRemaining(auction.end_time)}
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                    {auction.description}
+                                </p>
+                                
+                                <div className="space-y-3 mb-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500">Current Bid</span>
+                                        <span className="text-xl font-bold text-primary-600">
+                                            {formatCurrency(auction.currentBid)}
                                         </span>
                                     </div>
-                                    {auction.active_bidders > 0 && (
-                                        <div className="info-row">
-                                            <span className="info-label">Active Bidders:</span>
-                                            <span className="info-value bidders-count">
-                                                👥 {auction.active_bidders}
-                                            </span>
-                                        </div>
-                                    )}
-                                    {auction.total_bids > 0 && (
-                                        <div className="info-row">
-                                            <span className="info-label">Total Bids:</span>
-                                            <span className="info-value bids-count">
-                                                🔥 {auction.total_bids}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="auction-actions">
-                                <div className="action-buttons">
-                                    {isAuthenticated && new Date(auction.end_time) > new Date() ? (
-                                        <Link 
-                                            to={`/auctions/${auction._id}`}
-                                            className="btn btn-primary btn-block"
-                                        >
-                                            Join Live Auction
-                                        </Link>
-                                    ) : (
-                                        <button 
-                                            className="btn btn-secondary btn-block"
-                                            disabled={!isAuthenticated}
-                                            onClick={() => {
-                                                if (!isAuthenticated) {
-                                                    toast.info('Please login to join live auctions');
-                                                }
-                                            }}
-                                        >
-                                            {isAuthenticated ? 'View Details' : 'Login to Bid'}
-                                        </button>
-                                    )}
                                     
-                                    <div className="ecommerce-actions">
-                                        <button 
-                                            className={`cart-btn ${auction.inCart ? 'in-cart' : ''}`}
-                                            onClick={() => auction.inCart ? removeFromCart(auction._id) : addToCart(auction)}
-                                            title={auction.inCart ? 'Remove from cart' : 'Add to cart'}
-                                        >
-                                            {auction.inCart ? '🛒 Remove' : '🛒 Add to Cart'}
-                                        </button>
-                                        
-                                        <button 
-                                            className={`watchlist-btn ${auction.inWatchlist ? 'in-watchlist' : ''}`}
-                                            onClick={() => toggleWatchlist(auction)}
-                                            title={auction.inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
-                                        >
-                                            {auction.inWatchlist ? '⭐ Saved' : '⭐ Watch'}
-                                        </button>
-                                        
-                                        {auction.buyNowPrice && (
-                                            <button 
-                                                className="buy-now-btn"
-                                                onClick={() => toast.success(`Buy Now clicked for ${auction.title} at ${formatCurrency(auction.buyNowPrice)}`)}
-                                            >
-                                                💳 Buy Now
-                                            </button>
-                                        )}
+                                    <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-1 text-gray-600">
+                                            <FiUsers className="w-4 h-4" />
+                                            <span>{auction.bidders} bidders</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-gray-600">
+                                            <FiClock className="w-4 h-4" />
+                                            <span>{auction.bids} bids</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div 
+                                            className="bg-primary-600 h-2 rounded-full" 
+                                            style={{ width: `${Math.min(100, (auction.bids / 200) * 100)}%` }}
+                                        ></div>
                                     </div>
                                 </div>
-                            </div>
+                                
+                                <div className="flex gap-2">
+                                    <Link 
+                                        to={`/auctions/${auction.id}`}
+                                        className="flex-1 bg-primary-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+                                    >
+                                        Place Bid
+                                    </Link>
+                                    <button className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <FiClock className="w-5 h-5 text-gray-600" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            )}
+
+                {filteredAuctions.length === 0 && (
+                    <div className="text-center py-12">
+                        <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No auctions found</h3>
+                        <p className="text-gray-500">Try adjusting your search or filter</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
